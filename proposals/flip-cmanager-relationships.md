@@ -74,10 +74,21 @@ One way we could implement `CClientWaterManager::New` is by copy-pasting the con
 
 ```cpp
 // CClientWaterManager.h
-CClientWaterManager::New(ElementID ID, CVector& vecBL, CVector& vecBR, CVector& vecTL, CVector& vecTR, bool bShallow = false);
+CClientWater* CClientWaterManager::New(ElementID ID, CVector& vecBL, CVector& vecBR, CVector& vecTL, CVector& vecTR, bool bShallow = false);
 
 // CClientWater.h
 CClientWater::CClientWater(ElementID ID, CVector& vecBL, CVector& vecBR, CVector& vecTL, CVector& vecTR, bool bShallow = false);
 ```
+Also, we would make `CClientWater`'s constructor private, and just add `CClientWaterManager` as a friend class. This would prevent anyone from creating random `CClientWater` instances.
 
-I think this is bad, so we should use templating magic to reduce copy-pasting.
+I think this is bad, so we should use templating magic to reduce copy-pasting:
+```cpp
+// CClientWaterManager.h
+template<typename... Args>
+CClientWater* CClientWaterManager::New(Args&& args...)
+{
+    // Do some assignments
+    // [...]
+    /* some variable */ = new CClientWater(std::forward<Args>(args...));
+}
+```
